@@ -1,19 +1,31 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
-from skimage import io
+import tifffile
+import os
 
-image = io.imread("path/to/image.jpg")
-#Used to load the image data into a NumPy array
+# Set the directory containing your images
+image_dir = "bands_test/Aqua143/"
 
-image_2d = image.reshape(-1, 3)
-#fit the image data into a 2-D array
-#The reshape() function flattens the 3-D image array into a 2-D array with number of rows equal to pixels in the image (3 for RGB)
+# Create an empty list to store the flattened image data
+image_data = []
 
+# Loop over each image file in the directory
+for filename in os.listdir(image_dir):
+    if filename.endswith(".tif"):
+        # Load the image data and flatten it into a 2D array
+        image = tifffile.imread(os.path.join(image_dir, filename))
+        image_2d = image.reshape(-1, image.shape[-1])
+        # Append the flattened image data to the list
+        image_data.append(image_2d)
+
+# Concatenate the flattened image data into a single 2D array
+all_image_data = np.concatenate(image_data, axis=0)
+
+# Apply the t-SNE algorithm to the 2D array
 tsne = TSNE(n_components=2, random_state=0)
-image_tsne = tsne.fit_transform(image_2d)
-#Use the t-SNE algorithm on the 2-D array
+all_image_tsne = tsne.fit_transform(all_image_data)
 
-plt.scatter(image_tsne[:, 0], image_tsne[:, 1])
+# Plot the t-SNE results
+plt.scatter(all_image_tsne[:, 0], all_image_tsne[:, 1])
 plt.show()
-#plot and display the t-SNE results.
